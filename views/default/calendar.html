@@ -1,0 +1,67 @@
+{{response.files.append(URL(r=request,c='static',f='js/jquery.js'))}}
+{{response.files.append(URL(r=request,c='static',f='ui.core.js'))}}
+{{response.files.append(URL(r=request,c='static',f='ui.draggable.js'))}}
+{{response.files.append(URL(r=request,c='static',f='js/moment.min.js'))}}
+{{response.files.append(URL(r=request,c='static',f='js/fullcalendar.js'))}}
+{{response.files.append(URL(r=request,c='static',f='css/fullcalendar.css'))}}
+{{response.files.append(URL(r=request,c='static',f='js/lang/es.js'))}}
+
+{{extend 'layout.html'}}
+
+
+
+<script type='text/javascript'>
+
+    $(document).ready(function() {
+    
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        
+        $('#calendar').fullCalendar({
+            header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
+			},
+            editable: false,
+            weekends:false,
+            lang: 'es',
+            minTime: "08:00:00",
+            maxTime: "22:00:00",            
+            events: [
+            {{for registro in registros:}}
+                {
+                    title: 'Pac: {{=registro.paciente.apellidos}} {{=registro.paciente.nombres}}, Nro sesion: {{=registro.task.nro_sesion}}  Obs: {{=registro.task.description}}, Medico: {{=registro.task.created_by.username}} ',
+                    allDay: false,                    
+                    start: '{{=registro.task.start_time.strftime('%Y-%m-%dT%H:%M')}}',//),//%B %d, %Y
+                    end: '{{=registro.task.stop_time.strftime('%Y-%m-%dT%H:%M')}}',//),   
+                    //stop: new Date('{{=registro.task.stop_time.strftime('%Y-%m-%d T %H:%M:%S')}}'),            
+                    //duration: '00:10:00',
+                    {{if registro.task.concluido == True: }}
+                        color: 'black'
+                    {{else:}}
+                        color: '#3a87ad'
+                    {{pass}},
+                    url: '{{=URL('editarTurnoCalendar',args=[registro.task.id,registro.task.paciente])}}'
+                    
+                                       
+                },
+            {{pass}}            
+            ]
+        });
+        
+    });
+</script>
+
+<div class="">
+
+    <div class="panel panel-default">
+  <div class="panel-heading">Turnos</div>
+  <div class="panel-body">
+    <div id='calendar'></div>
+  </div>
+</div>
+    
+</div>

@@ -1,0 +1,56 @@
+{{extend 'layout.html'}}
+
+<div class="panel panel-info">
+  <div class="panel-heading">PACIENTES</div>
+  <div class="panel-body">
+
+<div class="btn-group" role="group" aria-label="...">
+    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+  {{=A('AGREGAR PACIENTE', _href=URL('abmPacientes'), _class='btn btn-primary glyphicon glyphicon-search')}}  
+</div>
+
+
+  <div class="panel-body">
+  
+
+	  	{{if len(pacientes) > 0:}}
+			    <table class="table table-bordered" >
+					<tr>
+						<th>Paciente</th>
+						<th>DNI</th>
+						<th>Fecha Nac</th>
+						<th>Domicilio</th>
+						<th>Obra Soc</th>
+						<th>Tel Fijo</th>
+						<th>Celular</th>
+						<th>Email</th>
+						<th>Editar</th>
+						<th>Turnos</th>
+					</tr>  
+				  {{for paciente in pacientes:}}           
+				                  
+				        <tr>
+				           	<td>{{=paciente.nombres}} {{=paciente.apellidos}}</td>
+							<td>{{=paciente.dni}}</td>
+							<td>{{=paciente.fechaNac}}</td>
+							<td>{{=paciente.domicilio}}</td>
+							<td>{{=paciente.obraSocial}}</td>
+							<td>{{=paciente.telFijo}}</td>
+							<td>{{=paciente.celular}}</td>
+							<td>{{=paciente.email}}</td>
+							<td>{{=A('Editar', _href=URL('editarPaciente', args=paciente.id))}}</td>
+							<td>{{=A('Turnos', _href=URL('turnosDelPaciente', args=paciente.id))}}</td>
+					    </tr>                
+				                                      
+				   {{pass}}
+				</table>  
+
+		{{else:}}
+			<h3>NO existen datos para mostrar</h3>
+		{{pass}}
+
+
+
+  	</div>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+{{response.files.append(URL(r=request,c='static',f='css/jquery.dataTables.min.css'))}}
+{{response.files.append(URL(r=request,c='static',f='js/jquery.dataTables.min.js'))}}
+
+{{extend 'layout.html'}}
+
+{{block head}}
+	<script type="text/javascript">
+	$(document).ready(function(){
+	    $('#Tabla').DataTable({
+	    	"language": {
+				"sProcessing":     "Procesando...",
+				"sLengthMenu":     "Mostrar _MENU_ registros",
+				"sZeroRecords":    "No se encontraron resultados",
+				"sEmptyTable":     "NingÃºn dato disponible en esta tabla",
+				"sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+				"sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+				"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+				"sInfoPostFix":    "",
+				"sSearch":         "Buscar:",
+				"sUrl":            "",
+				"sInfoThousands":  ",",
+				"sLoadingRecords": "Cargando...",
+				"oPaginate": {
+					"sFirst":    "Primero",
+					"sLast":     "Ãšltimo",
+					"sNext":     "Siguiente",
+					"sPrevious": "Anterior"
+				},
+				"oAria": {
+					"sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+					"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+				}
+			}
+	    });
+	});
+	</script>
+{{end}}
+
+<div class="panel panel-default">
+  <div class="panel-heading">PACIENTES</div>
+  <div class="panel-body">
+
+<div class="btn-group" role="group" aria-label="...">
+   
+  {{=A('AGREGAR PACIENTE', _href=URL('abmPacientes'), _class='btn btn-primary')}}  
+</div>
+
+
+  <div class="panel-body">
+	  	{{if len(registros) > 0:}}
+			    <table id="Tabla" class="table table-bordered" >
+				    <thead>		
+						<tr>
+							<th>Paciente</th>
+							<th>DNI</th>
+							<th>Fecha Nac</th>
+							<th>Domicilio</th>
+							<th>Obra Soc</th>
+							<th>Tel Fijo</th>
+							<th>Celular</th>
+							<th>Email</th>
+							<th>Editar</th>
+							<th>Turnos</th>
+						</tr>
+					</thead>
+					<tbody>  
+					  {{for registro in registros:}}           
+					                  
+					        <tr>
+					           	<td>{{=registro.paciente.nombres}} {{=registro.paciente.apellidos}}</td>
+								<td>{{=registro.paciente.dni}}</td>
+								<td>{{=registro.paciente.fechaNac}}</td>
+								<td>{{=registro.paciente.domicilio}}</td>
+								<td>{{=registro.obraSocial.descripcion}}</td>
+								<td>{{=registro.paciente.telFijo}}</td>
+								<td>{{=registro.paciente.celular}}</td>
+								<td>{{=registro.paciente.email}}</td>
+								<td>{{=A('Editar', _href=URL('editarPaciente', args=registro.paciente.id))}}</td>
+								<td>{{=A('Turnos', _href=URL('turnosDelPaciente', args=registro.paciente.id))}}</td>
+						    </tr>                
+					                                      
+					   {{pass}}
+					</tbody>
+				</table>  
+
+		{{else:}}
+			<h3>NO existen datos para mostrar</h3>
+		{{pass}}
+
+
+
+  	</div>
+  </div>
+</div>

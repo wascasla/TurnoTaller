@@ -1,0 +1,62 @@
+{{extend 'layout.html'}}
+<h2>Agregar Nuevos Turnos</h2>
+<div class="panel panel-default">
+  <div class="panel-heading">Agregar Nuevos Turnos</div>
+  <div class="panel-body">
+	<div class="input-group">
+	    <form enctype="multipart/form-data" action="{{=URL('agregarTurno')}}" method="post">
+
+	    	
+
+			<div class="form-group">
+			  <label for="nombre">Paciente:</label>
+			  <input name="nombre" id="nombre" value="{{=paciente.apellidos}} {{=paciente.nombres}}" disabled="true" type="text"  class="form-control"/>
+			</div>
+	
+			
+			<input name="id" value="{{=paciente.id}}" type="hidden" />
+
+			<div class="form-group">
+			  <label for="observacion">Observacion</label>
+			  <textarea  class="form-control" id="observacion" rows="4" cols="50" name="description" value="" type="text" maxlength="100">   </textarea>
+			</div>
+			
+			<div class="form-group">
+			  <label for="fecha">Fecha y Hora del Turno</label>
+			  <input name="start_time" id="fecha" class="form-control" value="" type="datetime-local" required/>
+			</div>
+			
+				
+			<div class="form-group">
+			  <label for="sesion">Nro sesiones</label>
+			    <select name="nro_sesion" size="1" id="sesion"  class="form-control">
+				  <option value="1" selected="true">1</option>
+				  <option value="2">2</option>
+				  <option value="3">3</option>
+				  <option value="4">4</option>
+				  <option value="5">5</option>
+				  <option value="6">6</option>
+				  <option value="7">7</option>
+				  <option value="8">8</option>
+				  <option value="9">9</option>
+				  <option value="10">10</option>
+				</select>
+			</div>
+
+			<div class="form-group">
+			  <label for="duracion">Duracion (minutos)</label>
+			  <input name="duracion" id="duracion" class="form-control" value="" type="number" required/>
+			</div>
+
+			
+			<button type="submit" class="btn btn-default">Guardar</button>
+		</form>
+	</div>
+
+  </div>
+</div>
+
+
+
+
+

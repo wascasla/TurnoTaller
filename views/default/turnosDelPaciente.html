@@ -1,0 +1,64 @@
+{{extend 'layout.html'}}
+
+<div class="panel panel-default">
+  <div class="panel-heading">Turnos</div>
+  <div class="panel-body">
+
+	
+
+    <h2>Turnos del Paciente {{=paciente.apellidos}}, {{=paciente.nombres}}</h2>
+
+    <div class="btn-group" role="group" aria-label="...">  
+	  {{=A('Nuevo Turno', _href=URL('turno_formulario', args=paciente.id), _class='btn btn-primary')}}  
+	</div>
+
+	<p></p>		
+		<div>
+		    	{{ if len(turnos) > 0: }}
+						<table class="table table-hover" border="1px">
+							<tr class="active">
+								<th>Fecha y Hora del Turno</th>
+								<th>Fecha y Hora del Turno Fin</th>
+								<th>Observaciones</th>
+								<th>Nro sesion</th>
+								<th>concluido</th>
+								<th>Creado por</th>		
+								<th>Editar</th>
+								<th>Concluir</th>
+								<th>Eliminar</th>
+							</tr>  
+						  {{for turno in turnos:}}           
+						        
+						        {{if turno.concluido == True: }}
+									<tr class="success">
+								{{else:}}
+									<tr class="warning">
+								{{pass}}          
+						        
+						           	<td>{{=turno.start_time.strftime("%d/%m/%Y  ----  %H:%M")}}</td>
+						           	<td>{{=turno.stop_time.strftime("%d/%m/%Y  ----  %H:%M")}}</td>
+									<td>{{=turno.description}}</td>
+									<td>{{=turno.nro_sesion}}</td>
+										{{if turno.concluido == True: }}
+											<td>si</td>
+										{{else:}}
+											<td>no</td>
+										{{pass}}
+									<td>{{=turno.created_by.username}}</td>			
+									<td>{{=A('Editar', _href=URL('editarTurno', args=[turno.id,turno.paciente]))}}</td>
+									<td>{{=A('Concluir', _href=URL('concluirTurno', args=[turno.id,turno.paciente]))}}</td>
+									<td>{{=A('Eliminar', _href=URL('eliminarTurno', args=[turno.id,turno.paciente]))}}</td>
+									
+							    </tr>                
+						                                      
+						                
+						  {{pass}}  
+						</table>
+				{{else:}}
+				<h3>NO existen datos para mostrar</h3>
+				{{pass}}
+		</div>
+  </div>
+</div>
+
+
