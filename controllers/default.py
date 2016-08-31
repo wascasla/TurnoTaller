@@ -100,15 +100,15 @@ def calendar():
 @auth.requires_login()
 def abmPacientes():
     #grid = SQLFORM.grid(db.paciente,field_id=None)
-    return dict(formulario=crud.create(db.paciente,next='getAllPacientes',fields=['nombres','apellidos','dni','fechaNac','obraSocial','domicilio','telFijo','celular','email'],message='Paciente Registrado con Exito'))
+    return dict(formulario=crud.create(db.paciente,next='getAllPacientes',fields=['nombres','apellidos','dni','fechaNac','modelo','domicilio','telFijo','celular','email'],message='Paciente Registrado con Exito'))
     return locals()
 
 #devuelve todos los pacientes de la bd
 @auth.requires_login()
 def getAllPacientes():
     registros=db().select(
-        db.paciente.ALL, db.obraSocial.ALL,
-        left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id))
+        db.paciente.ALL, db.modelo.ALL,
+        left = db.modelo.on(db.paciente.obraSocial==db.modelo.id))
     return dict(registros=registros)
     #pacientes = db(db.paciente).select()
     #turnosDelDia = db(db.task.start_time==request.now).select()
@@ -117,8 +117,8 @@ def getAllPacientes():
 @service.json
 def getAllPacientesAjax2():
     registros=db().select(
-        db.paciente.ALL, db.obraSocial.ALL,
-        left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id))
+        db.paciente.ALL, db.modelo.ALL,
+        left = db.obraSocial.on(db.paciente.modelo==db.modelo.id))
     #return dict(registros=registros)
     return response.json(registros)
 
@@ -135,7 +135,7 @@ def allPacientes():
 @auth.requires_login()
 def editarPaciente():
     #id = ((request.args(0)) or redirect(URL('calendar'))
-    return dict(formulario=crud.update(db.paciente,(request.args(0)),next='getAllPacientes',fields=['nombres','apellidos','dni','fechaNac','obraSocial','domicilio','telFijo','celular','email'],message='Registro editado con Exito'))
+    return dict(formulario=crud.update(db.paciente,(request.args(0)),next='getAllPacientes',fields=['nombres','apellidos','dni','fechaNac','modelo','domicilio','telFijo','celular','email'],message='Registro editado con Exito'))
     #crud.update(db.nombredelatabla, id)
 
 #devuelve todos los turnos del paciente ordenador por fecha desc NECESITA EL ID DEL PACIENTE

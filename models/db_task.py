@@ -1,10 +1,17 @@
 # coding: utf8
 
-db.define_table('obraSocial',
+db.define_table('marca',
                 Field('descripcion','string'),
                 format='%(descripcion)s')
 
-db.obraSocial.descripcion.requires=[IS_NOT_EMPTY(),IS_NOT_IN_DB(db,'obraSocial.descripcion')]
+db.marca.descripcion.requires=[IS_NOT_EMPTY(),IS_NOT_IN_DB(db,'marca.descripcion')]
+
+db.define_table('modelo',
+                Field('descripcion','string'),
+                Field('marca',db.marca),
+                format='%(descripcion)s')
+
+db.modelo.descripcion.requires=[IS_NOT_EMPTY(),IS_NOT_IN_DB(db,'modelo.descripcion')]
 
 db.define_table('paciente',
     Field('nombres','string',
@@ -16,7 +23,7 @@ db.define_table('paciente',
     Field('dni','integer'),
     Field('fechaNac',
                       'date'),
-    Field('obraSocial',db.obraSocial),
+    Field('modelo',db.modelo),
     Field('domicilio','string',
                       label='Domicilio',
                       length=50),

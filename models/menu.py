@@ -28,7 +28,8 @@ response.menu = [
     (T('Home'), False, URL('default', 'inicio'), []),
     (T('Calendario'), False, URL('default', 'calendar'), []),
     (T('Pacientes'), False, URL('default', 'getAllPacientes'), []),
-    (T('Obra Social'), False, URL('obraSocialController', 'administrar_os'), []),
+    (T('Marca Vehiculo'), False, URL('marcaController', 'administrar_marca'), []),
+    (T('Modelo Vehiculo'), False, URL('modeloController', 'administrar_modelo'), []),
     (T('Usuarios'), False, URL('userController', 'administrar_user'), []),
     (T('Permisos Usuarios'), False, URL('userController', 'administrar_permisos'), [])
 
