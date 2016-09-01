@@ -27,7 +27,7 @@ response.google_analytics_id = None
 response.menu = [
     (T('Home'), False, URL('default', 'inicio'), []),
     (T('Calendario'), False, URL('default', 'calendar'), []),
-    (T('Clientes'), False, URL('default', 'getAllPacientes'), []),
+    (T('Pacientes'), False, URL('default', 'getAllPacientes'), []),
     (T('Marca Vehiculo'), False, URL('marcaController', 'administrar_marca'), []),
     (T('Modelo Vehiculo'), False, URL('modeloController', 'administrar_modelo'), []),
     (T('Usuarios'), False, URL('userController', 'administrar_user'), []),

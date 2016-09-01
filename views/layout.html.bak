@@ -115,7 +115,7 @@
         <div class="copyright pull-left">{{=T('Copyright')}} &#169; {{=request.now.year}}</div>
           <div id="poweredBy" class="pull-right">
             {{=T('Desarrollado por')}}
-            <a href="#">Ingen-It</a>
+            <a href="www.google.com.ar">Ingen-It</a>
           </div>
       </div>
     </footer>

@@ -96,6 +96,7 @@
 'click to check for upgrades': 'haga clic para buscar actualizaciones',
 'client': 'cliente',
 'Client IP': 'IP del Cliente',
+'Clientes': 'Clientes',
 'Close': 'Cerrar',
 'Comma-separated export including columns not shown; fields from other tables are exported as raw values for faster export': 'Comma-separated export including columns not shown; fields from other tables are exported as raw values for faster export',
 'Comma-separated export of visible columns. Fields from other tables are exported as they appear on-screen but this may be slow for many rows': 'Comma-separated export of visible columns. Fields from other tables are exported as they appear on-screen but this may be slow for many rows',

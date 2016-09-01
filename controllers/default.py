@@ -108,7 +108,7 @@ def abmPacientes():
 def getAllPacientes():
     registros=db().select(
         db.paciente.ALL, db.modelo.ALL,
-        left = db.modelo.on(db.paciente.obraSocial==db.modelo.id))
+        left = db.modelo.on(db.paciente.modelo==db.modelo.id))
     return dict(registros=registros)
     #pacientes = db(db.paciente).select()
     #turnosDelDia = db(db.task.start_time==request.now).select()
@@ -118,7 +118,7 @@ def getAllPacientes():
 def getAllPacientesAjax2():
     registros=db().select(
         db.paciente.ALL, db.modelo.ALL,
-        left = db.obraSocial.on(db.paciente.modelo==db.modelo.id))
+        left = db.modelo.on(db.paciente.modelo==db.modelo.id))
     #return dict(registros=registros)
     return response.json(registros)
 

@@ -13,11 +13,11 @@
 {{end}}
 
 
-<h2>Bienvenido a Taller Gestion V1.0</h2>
+<h2>Bienvenido a Kinesio Gestion</h2>
 <p class="lead">Que nos ofrece este sistema:</p>
 <ol>
   <li>Gestion de Turnos:</li>
-  <li>Gestion de Clientes</li>
+  <li>Gestion de Pacientes</li>
   <li>Un Calendario con los turnos asignados , por mes, semana y dia actual</li>
   
 </ol>
