@@ -33,7 +33,7 @@
             events: [
             {{for registro in registros:}}
                 {
-                    title: 'Pac: {{=registro.paciente.apellidos}} {{=registro.paciente.nombres}}, Nro sesion: {{=registro.task.nro_sesion}}  Obs: {{=registro.task.description}}, Medico: {{=registro.task.created_by.username}} ',
+                    title: 'Cliente: {{=registro.paciente.apellidos}} {{=registro.paciente.nombres}}, Vehiculo: {{=registro.paciente.modelo.descripcion}}, Observaciones: {{=registro.task.description}} ',
                     allDay: false,                    
                     start: '{{=registro.task.start_time.strftime('%Y-%m-%dT%H:%M')}}',//),//%B %d, %Y
                     end: '{{=registro.task.stop_time.strftime('%Y-%m-%dT%H:%M')}}',//),   
