@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="eb68f417-bff6-49ec-afa6-01e2236365df" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_cas.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_event.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_group.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_membership.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_permission.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_auth_user.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_obraSocial.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_paciente.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/c8b669d15150d7109e5f7ab36744a5b7_task.table" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/databases.rar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/sql.log" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/databases/storage.sqlite" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/controllers/obraSocialController.py" afterPath="$PROJECT_DIR$/controllers/modeloController.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/views/obraSocialController/administrar_os.html" afterPath="$PROJECT_DIR$/views/modeloController/administrar_modelo.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controllers/default.py" afterPath="$PROJECT_DIR$/controllers/default.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/languages/es.py" afterPath="$PROJECT_DIR$/languages/es.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/db_task.py" afterPath="$PROJECT_DIR$/models/db_task.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/menu.py" afterPath="$PROJECT_DIR$/models/menu.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/default/getAllPacientes.html" afterPath="$PROJECT_DIR$/views/default/getAllPacientes.html" />
-    </list>
+    <list default="true" id="eb68f417-bff6-49ec-afa6-01e2236365df" name="Default" comment="" />
     <ignored path="TurnoTaller.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
