@@ -106,13 +106,41 @@ def abmPacientes():
 #devuelve todos los pacientes de la bd
 @auth.requires_login()
 def getAllPacientes():
-    registros=db().select(
-        db.paciente.ALL, db.modelo.ALL,
-        left = db.modelo.on(db.paciente.modelo==db.modelo.id))
+    #return dict()
+    registros = []
     return dict(registros=registros)
-    #pacientes = db(db.paciente).select()
-    #turnosDelDia = db(db.task.start_time==request.now).select()
-    #return dict(pacientes=pacientes)
+    #dato = int(request.vars['optionsRadios'])
+    #if dato == 1: #todos
+    #    registros=db().select(
+    #    db.paciente.ALL, db.obraSocial.ALL,
+    #    left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id))
+    #elif dato == 2: #dni
+    #    campo = int(request.vars['input'])
+    #    registros=db().select(
+    #    db.paciente.ALL, db.obraSocial.ALL,
+    #    left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo))
+
+@auth.requires_login()
+def buscarPacientes():
+    #campo = request.vars['input']
+    #registros=db().select(
+    #db.paciente.ALL, db.obraSocial.ALL,
+    #left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo))
+    if request.vars['optionsRadios'] == '1' or request.vars['input'] == '':
+        registros= db((db.paciente.modelo==db.modelo.id)).select()
+    if request.vars['optionsRadios'] == '2':
+        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.dni==request.vars['input'])).select()
+    if request.vars['optionsRadios'] == '3':
+        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.apellidos.lower().contains((request.vars['input']).lower()))).select()
+    if request.vars['optionsRadios'] == '4':
+        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.nombres.lower().contains((request.vars['input']).lower()))).select()
+
+    #registros= db((db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo)).select()
+    #return dict(registros=registros)
+    context = dict(registros=registros)
+    return response.render('default/getAllPacientes.html', context)
+
+    
 @auth.requires_login()
 @service.json
 def getAllPacientesAjax2():

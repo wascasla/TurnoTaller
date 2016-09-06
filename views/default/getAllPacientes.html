@@ -46,49 +46,97 @@
 </div>
 
 
+  <div class="panel panel-info">
+	<div class="panel-heading">Buscar</div>
   <div class="panel-body">
-	  	{{if len(registros) > 0:}}
-			    <table id="Tabla" class="table table-bordered" >
-				    <thead>		
-						<tr>
-							<th>Paciente</th>
-							<th>DNI</th>
-							<th>Fecha Nac</th>
-							<th>Domicilio</th>
-							<th>Modelo</th>
-							<th>Tel Fijo</th>
-							<th>Celular</th>
-							<th>Email</th>
-							<th>Editar</th>
-							<th>Turnos</th>
-						</tr>
-					</thead>
-					<tbody>  
-					  {{for registro in registros:}}           
-					                  
-					        <tr>
-					           	<td>{{=registro.paciente.nombres}} {{=registro.paciente.apellidos}}</td>
-								<td>{{=registro.paciente.dni}}</td>
-								<td>{{=registro.paciente.fechaNac}}</td>
-								<td>{{=registro.paciente.domicilio}}</td>
-								<td>{{=registro.modelo.descripcion}}</td>
-								<td>{{=registro.paciente.telFijo}}</td>
-								<td>{{=registro.paciente.celular}}</td>
-								<td>{{=registro.paciente.email}}</td>
-								<td>{{=A('Editar', _href=URL('editarPaciente', args=registro.paciente.id))}}</td>
-								<td>{{=A('Turnos', _href=URL('turnosDelPaciente', args=registro.paciente.id))}}</td>
-						    </tr>                
-					                                      
-					   {{pass}}
-					</tbody>
-				</table>  
+		<form id="miformulario" class="navbar-form navbar-left" role="search" enctype="multipart/form-data" action="{{=URL('buscarPacientes')}}" method="post">
 
-		{{else:}}
-			<h3>NO existen datos para mostrar</h3>
-		{{pass}}
+		<div class="radio">
+		  <label>
+		    <input type="radio" name="optionsRadios" id="optionsRadios1" value="1" checked>
+		    Todos
+		  </label>
+		</div>
+		  <div class="radio">
+		  <label>
+		    <input type="radio" name="optionsRadios" id="optionsRadios1" value="2" >
+		    DNI
+		  </label>
+		</div>
+		<div class="radio">
+		  <label>
+		    <input type="radio" name="optionsRadios" id="optionsRadios2" value="3">
+		    Apellido
+		  </label>
+		</div>
+		<div class="radio disabled">
+		  <label>
+		    <input type="radio" name="optionsRadios" id="optionsRadios3" value="4" >
+		    Nombre
+		  </label>
+		</div>
+
+		  <div class="form-group">
+		    <input type="text" name="input" class="form-control" placeholder="Buscar">
+		  </div>
+		  <button type="submit" class="btn btn-default">Buscar</button>
 
 
+		
 
+		</form>
   	</div>
+  	</div>
+
+
+<div id="destino" class="panel panel-info">
+	<div class="panel-heading">Listado</div>
+		  <div class="panel-body">
+			  	{{if len(registros) > 0:}}
+					    <table id="Tabla" class="table table-bordered" >
+						    <thead>		
+								<tr>
+									<th>Cliente</th>
+									<th>DNI</th>
+									<th>Fecha Nac</th>
+									<th>Domicilio</th>
+									<th>Modelo</th>
+									<th>Tel Fijo</th>
+									<th>Celular</th>
+									<th>Email</th>
+									<th>Editar</th>
+									<th>Turnos</th>
+								</tr>
+							</thead>
+							<tbody>  
+							  {{for registro in registros:}}           
+							                  
+							        <tr>
+							           	<td>{{=registro.paciente.nombres}} {{=registro.paciente.apellidos}}</td>
+										<td>{{=registro.paciente.dni}}</td>
+										<td>{{=registro.paciente.fechaNac}}</td>
+										<td>{{=registro.paciente.domicilio}}</td>
+										<td>{{=registro.modelo.descripcion}}</td>
+										<td>{{=registro.paciente.telFijo}}</td>
+										<td>{{=registro.paciente.celular}}</td>
+										<td>{{=registro.paciente.email}}</td>
+										<td>{{=A('Editar', _href=URL('editarPaciente', args=registro.paciente.id))}}</td>
+										<td>{{=A('Turnos', _href=URL('turnosDelPaciente', args=registro.paciente.id))}}</td>
+								    </tr>                
+							                                      
+							   {{pass}}
+							</tbody>
+						</table>  
+
+				{{else:}}
+					<h3>NO existen datos para mostrar</h3>
+				{{pass}}
+
+
+
+		  	</div>
+  	</div> <!-- fin de div de la tabla registros -->
+	
+
   </div>
 </div>
