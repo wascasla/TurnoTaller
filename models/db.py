@@ -29,12 +29,12 @@ else:
     ## session.connect(request, response, db = MEMDB(Client()))
 
 ##probando para produccion
-#production=True
+production=False
 #URI = 'mysql://username:password@hostname:port/dbname'
-#if production:
-#db = DAL("postgres://postgres:was@localhost:5432/kinesio",migrate_enabled=True, pool_size=10)
-#else:
-#db=DAL('sqlite://storage.sqlite')
+if production:
+    db = DAL("postgres://postgres:was@localhost:5432/TurnoTaller",migrate_enabled=True, pool_size=10)
+else:
+    db=DAL('sqlite://storage.sqlite')
 
 
 
