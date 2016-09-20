@@ -16,6 +16,7 @@ from datetime import date, timedelta
 
 import datetime
 import string
+import time
 #import yaml
 
 
@@ -87,12 +88,15 @@ def calendar2():
 #pagina principal despues del login
 @auth.requires_login()
 def calendar():
+
+    anio = int(time.strftime("%Y"))
+    d = datetime.datetime(anio-1,12,31)
     #tasks=db(db.task).select()
     #registros=db().select(
     #    db.paciente.ALL, db.task.ALL,
     #    left = db.paciente.on(db.paciente.id==db.task.paciente)&(db.task.created_by==1))
     registros= db((db.paciente.id==db.task.paciente)&
-        (db.task.created_by==auth.user.id)).select()
+        (db.task.created_by==auth.user.id) & (db.task.start_time > d)).select()
     return dict(registros=registros)
     #tasks=db(db.task.start_time>=request.now).select()
 

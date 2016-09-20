@@ -287,3 +287,103 @@ CREATE TABLE task(
 );
 >>>>>>> c65b6cbc3fbf8a28b8863c9064c388e0ffb9675b
 success!
+timestamp: 2016-09-15T17:05:46.708000
+CREATE TABLE auth_user(
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(512),
+    username VARCHAR(128),
+    password VARCHAR(512),
+    registration_key VARCHAR(512),
+    reset_password_key VARCHAR(512),
+    registration_id VARCHAR(512)
+);
+success!
+timestamp: 2016-09-15T17:05:46.744000
+CREATE TABLE auth_group(
+    id SERIAL PRIMARY KEY,
+    role VARCHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-09-15T17:05:46.764000
+CREATE TABLE auth_membership(
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-09-15T17:05:46.784000
+CREATE TABLE auth_permission(
+    id SERIAL PRIMARY KEY,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE  ,
+    name VARCHAR(512),
+    table_name VARCHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2016-09-15T17:05:46.808000
+CREATE TABLE auth_event(
+    id SERIAL PRIMARY KEY,
+    time_stamp TIMESTAMP,
+    client_ip VARCHAR(512),
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    origin VARCHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2016-09-15T17:05:46.840000
+CREATE TABLE auth_cas(
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    created_on TIMESTAMP,
+    service VARCHAR(512),
+    ticket VARCHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2016-09-15T17:05:46.868000
+CREATE TABLE marca(
+    id SERIAL PRIMARY KEY,
+    descripcion VARCHAR(512)
+);
+success!
+timestamp: 2016-09-15T17:05:46.886000
+CREATE TABLE modelo(
+    id SERIAL PRIMARY KEY,
+    descripcion VARCHAR(512),
+    marca INTEGER REFERENCES marca (id) ON DELETE CASCADE  
+);
+success!
+timestamp: 2016-09-15T17:05:46.905000
+CREATE TABLE paciente(
+    id SERIAL PRIMARY KEY,
+    nombres VARCHAR(15),
+    apellidos VARCHAR(15),
+    dni INTEGER,
+    fechaNac DATE,
+    modelo INTEGER REFERENCES modelo (id) ON DELETE NO ACTION  ,
+    domicilio VARCHAR(50),
+    telFijo VARCHAR(40),
+    celular VARCHAR(40),
+    email VARCHAR(40),
+    created_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    created_on TIMESTAMP
+);
+success!
+timestamp: 2016-09-15T17:05:46.919000
+CREATE TABLE task(
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(512),
+    paciente INTEGER REFERENCES paciente (id) ON DELETE CASCADE  ,
+    duracion INTEGER,
+    description TEXT,
+    start_time TIMESTAMP,
+    stop_time TIMESTAMP,
+    nro_sesion INTEGER,
+    concluido CHAR(1),
+    created_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE  ,
+    created_on TIMESTAMP
+);
+success!

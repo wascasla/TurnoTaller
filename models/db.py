@@ -29,10 +29,10 @@ else:
     ## session.connect(request, response, db = MEMDB(Client()))
 
 ##probando para produccion
-production=False
+production=True
 #URI = 'mysql://username:password@hostname:port/dbname'
 if production:
-    db = DAL("postgres://postgres:was@localhost:5432/TurnoTaller",migrate_enabled=True, pool_size=10)
+    db = DAL("postgres://postgres:123@localhost:5432/TurnoTaller",migrate_enabled=True, pool_size=10)
 else:
     db=DAL('sqlite://storage.sqlite')
 

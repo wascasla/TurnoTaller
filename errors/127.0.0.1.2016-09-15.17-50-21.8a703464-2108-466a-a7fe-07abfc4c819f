@@ -1,0 +1,419 @@
+(dp1
+S'output'
+p2
+S"<type 'exceptions.TypeError'> can't compare datetime.datetime to Query"
+p3
+sS'layer'
+p4
+S'C:\\web2py\\applications\\TurnoTaller\\controllers/default.py'
+p5
+sS'code'
+p6
+S'# -*- coding: utf-8 -*-\n# this file is released under public domain and you can use without limitations\n\n#########################################################################\n## This is a sample controller\n## - index is the default action of any application\n## - user is required for authentication and authorization\n## - download is for downloading files uploaded in the db (does streaming)\n#########################################################################\nfrom gluon.tools import Crud\ncrud = Crud(db)\n\nfrom datetime import date, timedelta\n\n #from datetime import time, timedelta\n\nimport datetime\nimport string\nimport time\n#import yaml\n\n\ndef index():\n    """\n    example action using the internationalization operator T and flash\n    rendered by views/default/index.html or views/generic.html\n\n    if you need a simple wiki simply replace the two lines below with:\n    return auth.wiki()\n    """\n    #response.flash = T("Hello World")\n    #return dict(message=T(\'Welcome to web2py!\'))\n    return dict()\n\ndef inicio():\n    return dict()\n\n\ndef user():\n    """\n    exposes:\n    http://..../[app]/default/user/login\n    http://..../[app]/default/user/logout\n    http://..../[app]/default/user/register\n    http://..../[app]/default/user/profile\n    http://..../[app]/default/user/retrieve_password\n    http://..../[app]/default/user/change_password\n    http://..../[app]/default/user/manage_users (requires membership in\n    http://..../[app]/default/user/bulk_register\n    use @auth.requires_login()\n        @auth.requires_membership(\'group name\')\n        @auth.requires_permission(\'read\',\'table name\',record_id)\n    to decorate functions that need access control\n    """\n    return dict(form=auth())\n\n\n@cache.action()\ndef download():\n    """\n    allows downloading of uploaded files\n    http://..../[app]/default/download/[filename]\n    """\n    return response.download(request, db)\n\n\ndef call():\n    """\n    exposes services. for example:\n    http://..../[app]/default/call/jsonrpc\n    decorate with @services.jsonrpc the functions to expose\n    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv\n    """\n    return service()\n\ndef calendar2():\n    paciente_id=request.args(0)\n    paciente=db.paciente[paciente_id]\n    if paciente_id:\n       tasks=db(db.task.paciente==paciente_id)\\\n               (db.task.created_by==auth.user.id)\\\n               (db.task.start_time>=request.now).select()\n    else:\n       tasks=db(db.task.created_by==auth.user.id)\\\n               (db.task.start_time>=request.now).select()\n    return dict(tasks=tasks,paciente=paciente)\n\n#pagina principal despues del login\n@auth.requires_login()\ndef calendar():\n    anio = int(time.strftime("%Y"))\n    \n    d = datetime.datetime(anio-1,12,31)\n\n    #tasks=db(db.task).select()\n    #registros=db().select(\n    #    db.paciente.ALL, db.task.ALL,\n    #    left = db.paciente.on(db.paciente.id==db.task.paciente)&(db.task.created_by==1))\n    registros= db((db.paciente.id==db.task.paciente)&\n        (db.task.created_by==auth.user.id) & db.task.start_time>d).select()\n    return dict(registros=registros)\n    #tasks=db(db.task.start_time>=request.now).select()\n\n#agrego un nuevo paciente\n@auth.requires_login()\ndef abmPacientes():\n    #grid = SQLFORM.grid(db.paciente,field_id=None)\n    return dict(formulario=crud.create(db.paciente,next=\'getAllPacientes\',fields=[\'nombres\',\'apellidos\',\'dni\',\'fechaNac\',\'modelo\',\'domicilio\',\'telFijo\',\'celular\',\'email\'],message=\'Paciente Registrado con Exito\'))\n    return locals()\n\n#devuelve todos los pacientes de la bd\n@auth.requires_login()\ndef getAllPacientes():\n    #return dict()\n    registros = []\n    return dict(registros=registros)\n    #dato = int(request.vars[\'optionsRadios\'])\n    #if dato == 1: #todos\n    #    registros=db().select(\n    #    db.paciente.ALL, db.obraSocial.ALL,\n    #    left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id))\n    #elif dato == 2: #dni\n    #    campo = int(request.vars[\'input\'])\n    #    registros=db().select(\n    #    db.paciente.ALL, db.obraSocial.ALL,\n    #    left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo))\n\n@auth.requires_login()\ndef buscarPacientes():\n    #campo = request.vars[\'input\']\n    #registros=db().select(\n    #db.paciente.ALL, db.obraSocial.ALL,\n    #left = db.obraSocial.on(db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo))\n    if request.vars[\'optionsRadios\'] == \'1\' or request.vars[\'input\'] == \'\':\n        registros= db((db.paciente.modelo==db.modelo.id)).select()\n    if request.vars[\'optionsRadios\'] == \'2\':\n        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.dni==request.vars[\'input\'])).select()\n    if request.vars[\'optionsRadios\'] == \'3\':\n        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.apellidos.lower().contains((request.vars[\'input\']).lower()))).select()\n    if request.vars[\'optionsRadios\'] == \'4\':\n        registros= db((db.paciente.modelo==db.modelo.id)&(db.paciente.nombres.lower().contains((request.vars[\'input\']).lower()))).select()\n\n    #registros= db((db.paciente.obraSocial==db.obraSocial.id)&(db.paciente.dni==campo)).select()\n    #return dict(registros=registros)\n    context = dict(registros=registros)\n    return response.render(\'default/getAllPacientes.html\', context)\n\n    \n@auth.requires_login()\n@service.json\ndef getAllPacientesAjax2():\n    registros=db().select(\n        db.paciente.ALL, db.modelo.ALL,\n        left = db.modelo.on(db.paciente.modelo==db.modelo.id))\n    #return dict(registros=registros)\n    return response.json(registros)\n\ndef getAllPacientesAjax():\n    response.view=\'default/getAllPacientesAjax.html\'\n    return dict(message=T("Hello World"))\n\n\ndef allPacientes():\n    pacientes = db(db.paciente).select()\n    #turnosDelDia = db(db.task.start_time==request.now).select()\n    return dict(pacientes=pacientes)\n\n@auth.requires_login()\ndef editarPaciente():\n    #id = ((request.args(0)) or redirect(URL(\'calendar\'))\n    return dict(formulario=crud.update(db.paciente,(request.args(0)),next=\'getAllPacientes\',fields=[\'nombres\',\'apellidos\',\'dni\',\'fechaNac\',\'modelo\',\'domicilio\',\'telFijo\',\'celular\',\'email\'],message=\'Registro editado con Exito\'))\n    #crud.update(db.nombredelatabla, id)\n\n#devuelve todos los turnos del paciente ordenador por fecha desc NECESITA EL ID DEL PACIENTE\n@auth.requires_login()\ndef turnosDelPaciente():\n    paciente_id=request.args(0)\n    paciente = db.paciente(request.args(0))    \n    if paciente_id:\n       #turnos=db(db.task.paciente==paciente_id, orderby=~db.task.start_time)\n       #turnos=db().select(db.task.paciente==paciente_id)\n\n       #registros=db().select(\n       #db.auth_user.ALL, db.task.ALL,\n       #left = db.auth_user.on(db.paciente.id==db.task.paciente))\n       # return dict(registros=registros)\n\n       turnos=db(db.task.paciente==paciente_id).select(orderby=~db.task.start_time)\n\n       #turnos=db(db.task.paciente==paciente_id)\n       #turnos = db.executesql(\'SELECT * FROM task where task.id=;\')\n       return dict(paciente=paciente,turnos=turnos)\n       #return dict(paciente=paciente,registros=registros)\n\n@auth.requires_login()\ndef concluirTurno():\n    idpaciente = (request.args(1))\n    idturno = (request.args(0))\n    turno = db(db.task.id == idturno).select().first()\n    if (turno.concluido ):\n        resultado = db(db.task.id == idturno).update(concluido=False)\n    else:\n        resultado = db(db.task.id == idturno).update(concluido=True)\n    session.flash = \'Turno Actualizado con exito\'    \n    return redirect(URL(\'turnosDelPaciente\', args=(idpaciente)))\n\n@auth.requires_login()\ndef eliminarTurno():\n    idpaciente = (request.args(1))\n    idturno = (request.args(0))\n    resultado = db(db.task.id == idturno).delete()\n    session.flash = \'Turno eliminado con exito\'    \n    return redirect(URL(\'turnosDelPaciente\', args=(idpaciente)))    \n    \n    #return dict(formulario=crud.delete(db.task, request.args(0),next=\'getAllPacientes\',message=\'Registro eliminado con Exito\'))\n    #return locals()\n\n@auth.requires_login()\ndef editarTurnoCalendar():\n    idpaciente =(request.args(1))\n    #siguiente = crud.settings.update_next = URL(\'turnosDelPaciente\', args=(idpaciente))\n    encabezado = {\'start_time\': \'Fecha y Hora\'}\n    return dict(formulario=crud.update(db.task,(request.args(0)),fields=[\'start_time\',\'stop_time\',\'description\',\'nro_sesion\',\'concluido\'],next=\'calendar\',headers=encabezado,message=\'Registro editado con Exito\'))\n\n#editar turno del paciente\n@auth.requires_login()\ndef editarTurno():\n    idpaciente =(request.args(1))\n    siguiente = crud.settings.update_next = URL(\'turnosDelPaciente\', args=(idpaciente))\n    return dict(formulario=crud.update(db.task,(request.args(0)),fields=[\'title\',\'start_time\',\'stop_time\',\'description\',\'nro_sesion\',\'concluido\'],next=siguiente,message=\'Registro editado con Exito\'))\n    #redirect(URL(\'turnosDelPaciente\', args=(idpaciente)))\n    #return locals()\n    #crud.update(db.nombredelatabla, id)\n\n@auth.requires_login()\ndef crearTurno():\n    "lists all documents attached to a certain page"\n    paciente = db.paciente(request.args(0)) or redirect(URL(\'calendar\'))\n    db.task.paciente.default = paciente.id\n    form = crud.create(db.task)\n    #pagedocuments = db(db.document.page_id==this_page.id).select()\n    return dict(form=form)\n\n#funcion que devuelve un formulario para crear turnos recibe como parametro el id del paciente\n@auth.requires_login()\ndef turno_formulario():\n    paciente = db.paciente(request.args(0)) or redirect(URL(\'calendar\'))\n    #hoy=datetime.datetime.now()-timedelta(days=0)\n    #manana=date.today()+timedelta(days=1)\n    # 0 es equivalente a domingo y 6 equivale a sabado\n    #dia =  hoy.strftime(\'%w\')\n    #return dict(paciente=paciente,hoy=hoy,manana=manana,dia=dia)\n    return dict(paciente=paciente)\n\n#funcion que registra los turnos nuevos\n@auth.requires_login()\ndef agregarTurno():\n    paciente_id = request.vars[\'id\']    \n    nro_sesion = int(request.vars[\'nro_sesion\'])\n    duration = int(request.vars[\'duracion\'])\n    #nro = int(request.vars[\'nro_sesion\'])\n    nro = 1\n    fecha1 = datetime.datetime.strptime(request.vars[\'start_time\'], "%Y-%m-%dT%H:%M")\n    dia =  fecha1.strftime(\'%w\')\n    dia = int(dia)\n    #print request.vars[\'nro_sesion\']\n    valor = 1\n    rango = nro_sesion\n    if (dia == 0 or dia == 6):\n        session.flash = \'La fecha ingresada es incorrecta ya que es Sabado o Domingo\'        \n        redirect(URL(\'turno_formulario\', args=(paciente_id))) \n        #response.flash = \'La fecha ingresada es incorrecta ya que es Sabado o Domingo\'\n    else:\n        while valor <= rango:          \n            dia2 =  fecha1.strftime(\'%w\')\n            dia2 = int(dia2)\n            if (dia2 == 0 or dia2 == 6):\n                fecha1=fecha1+timedelta(days=1)\n                #valor = valor - 1\n            else:\n                id = db.task.insert(title="Turno",description=request.vars[\'description\'],duracion=duration,nro_sesion=nro,\n                start_time=fecha1,stop_time=fecha1+ timedelta(minutes=duration),paciente=request.vars[\'id\'])\n                fecha1=fecha1+timedelta(days=1)\n                nro += 1  \n                valor = valor + 1\n    #     #id=db(db.task.paciente==request.vars[\'paciente\']).select()\n        session.flash = \'Turno/s registrado/s con \xc3\xa9xito\'\n        redirect(URL(\'turnosDelPaciente\', args=(paciente_id)))   \n    # if dia == 0:\n    #     response.flash = \'La fecha ingresada es incorrecta ya que es Sabado o Domingo\'\n    #     redirect(URL(\'turno_formulario\', vars=dict(id=request.vars[\'id\']))) \n    # else:        \n    #     id = db.task.insert(title="Turno",description=request.vars[\'description\'],nro_sesion=request.vars[\'nro_sesion\'],\n    #         start_time=fecha1,stop_time=fecha1,paciente=request.vars[\'id\'])\n    #     #id=db(db.task.paciente==request.vars[\'paciente\']).select()\n    #     response.flash = \'Turno registrado con \xc3\xa9xito\'\n    #     return dict(formulario=crud.read(db.task,id))\n\n@auth.requires_login()\ndef agregarTurno2():\n    #print request.vars[\'id\']\n    print request.vars[\'description\']     \n\n\n#        Field(\'title\',\'string\'),\n#    Field(\'task_type\'),\n#    Field(\'paciente\',db.paciente),\n#    Field(\'description\',\'text\'),\n#    Field(\'start_time\',\'datetime\'),\n#    Field(\'stop_time\',\'datetime\'),\n#    Field(\'nro_sesion\',\'integer\',default=1),\n#    Field(\'concluido\',\'boolean\',default=False),\n#    Field(\'created_by\',db.auth_user,default=auth.user_id,writable=False,readable=False),\n#    Field(\'created_on\',\'datetime\',default=request.now,writable=False,readable=False)\n\nresponse._vars=response._caller(calendar)\n'
+p7
+sS'snapshot'
+p8
+(dp9
+S'exception'
+p10
+(dp11
+S'__hash__'
+p12
+S"<method-wrapper '__hash__' of exceptions.TypeError object>"
+p13
+sS'__setattr__'
+p14
+S"<method-wrapper '__setattr__' of exceptions.TypeError object>"
+p15
+sS'__reduce_ex__'
+p16
+S'<built-in method __reduce_ex__ of exceptions.TypeError object>'
+p17
+sS'__getslice__'
+p18
+S"<method-wrapper '__getslice__' of exceptions.TypeError object>"
+p19
+sS'__getitem__'
+p20
+S"<method-wrapper '__getitem__' of exceptions.TypeError object>"
+p21
+sS'__setstate__'
+p22
+S'<built-in method __setstate__ of exceptions.TypeError object>'
+p23
+sS'__reduce__'
+p24
+S'<built-in method __reduce__ of exceptions.TypeError object>'
+p25
+sS'__str__'
+p26
+S"<method-wrapper '__str__' of exceptions.TypeError object>"
+p27
+sS'__format__'
+p28
+S'<built-in method __format__ of exceptions.TypeError object>'
+p29
+sS'__getattribute__'
+p30
+S"<method-wrapper '__getattribute__' of exceptions.TypeError object>"
+p31
+sS'__class__'
+p32
+S"<type 'exceptions.TypeError'>"
+p33
+sS'__unicode__'
+p34
+S'<built-in method __unicode__ of exceptions.TypeError object>'
+p35
+sS'__delattr__'
+p36
+S"<method-wrapper '__delattr__' of exceptions.TypeError object>"
+p37
+sS'__subclasshook__'
+p38
+S'<built-in method __subclasshook__ of type object>'
+p39
+sS'__repr__'
+p40
+S"<method-wrapper '__repr__' of exceptions.TypeError object>"
+p41
+sS'args'
+p42
+S'("can\'t compare datetime.datetime to Query",)'
+p43
+sS'__dict__'
+p44
+S'{}'
+p45
+sS'__sizeof__'
+p46
+S'<built-in method __sizeof__ of exceptions.TypeError object>'
+p47
+sS'__doc__'
+p48
+S"'Inappropriate argument type.'"
+p49
+sS'__init__'
+p50
+S"<method-wrapper '__init__' of exceptions.TypeError object>"
+p51
+sS'__new__'
+p52
+S'<built-in method __new__ of type object>'
+p53
+ssS'evalue'
+p54
+S"can't compare datetime.datetime to Query"
+p55
+sS'request'
+p56
+cgluon.html
+XML_unpickle
+p57
+(S's#a\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">ajax</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">application</td><td style="vertical-align:top;">:</td><td><div>TurnoTaller</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cid</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">controller</td><td style="vertical-align:top;">:</td><td><div>default</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">csrftoken</td><td style="vertical-align:top;">:</td><td><div>qeSCSRY0iXGKKgg5zt9SwIPtwQN8Slxq<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_admin</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-868cb228-6061-462b-aa79-a79d5b4defff<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_turnotaller</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_welcome</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-42267693-cc60-49e2-8164-7b287c8f89cd<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">env</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_ENCODING</td><td style="vertical-align:top;">:</td><td><div>gzip, deflate, sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_LANGUAGE</td><td style="vertical-align:top;">:</td><td><div>es-ES,es;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONNECTION</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_COOKIE</td><td style="vertical-align:top;">:</td><td><div>csrftoken=qeSCSRY0iXGKKgg5zt9SwIPtwQN8Slxq; session_id_welcome=127.0.0.1-42267693-cc60-49e2-8164-7b287c8f89cd; session_id_admin=127.0.0.1-868cb228-6061-462b-aa79-a79d5b4defff; session_id_turnotaller=127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_HOST</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_REFERER</td><td style="vertical-align:top;">:</td><td><div>http://127.0.0.1:8000/TurnoTaller/modeloController/administrar_modelo</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_UPGRADE_INSECURE_REQUESTS</td><td style="vertical-align:top;">:</td><td><div>1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_USER_AGENT</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">PATH_INFO</td><td style="vertical-align:top;">:</td><td><div>/TurnoTaller/default/calendar</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">QUERY_STRING</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_ADDR</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_PORT</td><td style="vertical-align:top;">:</td><td><div>53279</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_METHOD</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SCRIPT_NAME</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_NAME</td><td style="vertical-align:top;">:</td><td><div>Qno</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PORT</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PROTOCOL</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_SOFTWARE</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;C:\\\\web2py\\\\applications\\\\admin\\\\&#x27;, &#x27;C:\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;C:\\\\web2py\\\\applications\\\\TurnoTaller\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x3134df0: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;Qno&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;port&#x27;: 8000, &#x27;print_errors&#x27;: False, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;C:\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;******&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_encoding</td><td style="vertical-align:top;">:</td><td><div>gzip, deflate, sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_language</td><td style="vertical-align:top;">:</td><td><div>es-ES,es;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_connection</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cookie</td><td style="vertical-align:top;">:</td><td><div>csrftoken=qeSCSRY0iXGKKgg5zt9SwIPtwQN8Slxq; session_id_welcome=127.0.0.1-42267693-cc60-49e2-8164-7b287c8f89cd; session_id_admin=127.0.0.1-868cb228-6061-462b-aa79-a79d5b4defff; session_id_turnotaller=127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_host</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_referer</td><td style="vertical-align:top;">:</td><td><div>http://127.0.0.1:8000/TurnoTaller/modeloController/administrar_modelo</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_upgrade_insecure_requests</td><td style="vertical-align:top;">:</td><td><div>1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_user_agent</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>10.3.1.88</div></td></tr><tr><td><div>fe80::1041:2307:f5fc:fea7%12</div></td></tr><tr><td><div>fe80::15f0:4669:1e1f:fdfa%9</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>2001:0:9d38:90d7:1041:2307:f5fc:fea7</div></td></tr><tr><td><div>Qno</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path_info</td><td style="vertical-align:top;">:</td><td><div>/TurnoTaller/default/calendar</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">query_string</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_addr</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_port</td><td style="vertical-align:top;">:</td><td><div>53279</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_method</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_uri</td><td style="vertical-align:top;">:</td><td><div>/TurnoTaller/default/calendar</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">script_name</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_name</td><td style="vertical-align:top;">:</td><td><div>Qno</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_port</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_protocol</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_software</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_path</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.14.6-stable+timestamp.2016.05.10.00.21.47</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x0210D0D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x02CE2570&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x09DCD030&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x0210D0D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x02CE2570&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x09DCD030&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">extension</td><td style="vertical-align:top;">:</td><td><div>html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">folder</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py\\applications\\TurnoTaller\\</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">function</td><td style="vertical-align:top;">:</td><td><div>calendar</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">global_settings</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;C:\\\\web2py\\\\applications\\\\admin\\\\&#x27;, &#x27;C:\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;C:\\\\web2py\\\\applications\\\\TurnoTaller\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x3134df0: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;Qno&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;port&#x27;: 8000, &#x27;print_errors&#x27;: False, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;C:\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;******&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>10.3.1.88</div></td></tr><tr><td><div>fe80::1041:2307:f5fc:fea7%12</div></td></tr><tr><td><div>fe80::15f0:4669:1e1f:fdfa%9</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>2001:0:9d38:90d7:1041:2307:f5fc:fea7</div></td></tr><tr><td><div>Qno</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.14.6-stable+timestamp.2016.05.10.00.21.47</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_https</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_local</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_restful</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_scheduler</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_shell</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">now</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2016, 9, 15, 17, 50, 21, 67000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_args</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_extension</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">url</td><td style="vertical-align:top;">:</td><td><div>/TurnoTaller/default/calendar</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">utcnow</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2016, 9, 15, 20, 50, 21, 67000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi</td><td style="vertical-align:top;">:</td><td><div>&lt;gluon.main.LazyWSGI object at 0x08868290&gt;</div></td></tr></table></div>'
+tRp58
+sS'frames'
+p59
+(lp60
+(dp61
+S'file'
+p62
+S'C:\\web2py\\gluon\\restricted.py'
+p63
+sS'dump'
+p64
+(dp65
+S'environment'
+p66
+S"{'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'ASSIGNJS': <function ASSIGNJS>, 'AppConfig': <function AppConfig>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, ...}"
+p67
+sS'ccode'
+p68
+S'<code object <module> at 09B603C8, file "C:\\web2...ons\\TurnoTaller\\controllers/default.py", line 10>'
+p69
+ssS'lnum'
+p70
+I227
+sS'lines'
+p71
+(dp72
+I224
+S'            ccode = code'
+p73
+sI225
+S'        else:'
+p74
+sI226
+S'            ccode = compile2(code, layer)'
+p75
+sI227
+S'        exec ccode in environment'
+p76
+sI228
+S'    except HTTP:'
+p77
+sI229
+S'        raise'
+p78
+sI230
+S'    except RestrictedError:'
+p79
+sI231
+S'        # do not encapsulate (obfuscate) the original RestrictedError'
+p80
+sI222
+S'    try:'
+p81
+sI223
+S'        if isinstance(code, types.CodeType):'
+p82
+ssS'call'
+p83
+S"(code='# -*- coding: utf-8 -*-\\n# this file is released ...alse)\\n\\nresponse._vars=response._caller(calendar)\\n', environment={'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'ASSIGNJS': <function ASSIGNJS>, 'AppConfig': <function AppConfig>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, ...}, layer=r'C:\\web2py\\applications\\TurnoTaller\\controllers/default.py')"
+p84
+sS'func'
+p85
+S'restricted'
+p86
+sa(dp87
+g62
+S'C:\\web2py\\applications\\TurnoTaller\\controllers\\default.py'
+p88
+sg64
+(dp89
+sg70
+I316
+sg71
+(dp90
+I305
+S"#        Field('title','string'),"
+p91
+sI306
+S"#    Field('task_type'),"
+p92
+sI307
+S"#    Field('paciente',db.paciente),"
+p93
+sI308
+S"#    Field('description','text'),"
+p94
+sI309
+S"#    Field('start_time','datetime'),"
+p95
+sI310
+S"#    Field('stop_time','datetime'),"
+p96
+sI311
+S"#    Field('nro_sesion','integer',default=1),"
+p97
+sI312
+S"#    Field('concluido','boolean',default=False),"
+p98
+sI313
+S"#    Field('created_by',db.auth_user,default=auth.user_id,writable=False,readable=False),"
+p99
+sI314
+S"#    Field('created_on','datetime',default=request.now,writable=False,readable=False)"
+p100
+ssg83
+S'()'
+p101
+sg85
+S'<module>'
+p102
+sa(dp103
+g62
+S'C:\\web2py\\gluon\\globals.py'
+p104
+sg64
+(dp105
+S'self'
+p106
+S'undefined'
+p107
+sS'f'
+S'<function calendar>'
+p108
+ssg70
+I417
+sg71
+(dp109
+I416
+S'        self._vars = None'
+p110
+sI417
+S'        self._caller = lambda f: f()'
+p111
+sI418
+S'        self._view_environment = None'
+p112
+sI419
+S'        self._custom_commit = None'
+p113
+sI420
+S'        self._custom_rollback = None'
+p114
+sI421
+S"        self.generic_patterns = ['*']"
+p115
+sI412
+S"        self.flash = ''            # used by the default view layout"
+p116
+sI413
+S'        self.meta = Storage()      # used by web2py_ajax.html'
+p117
+sI414
+S'        self.menu = []             # used by the default view layout'
+p118
+sI415
+S'        self.files = []            # used by web2py_ajax.html'
+p119
+ssg83
+S'(f=<function calendar>)'
+p120
+sg85
+S'<lambda>'
+p121
+sa(dp122
+g62
+S'C:\\web2py\\gluon\\tools.py'
+p123
+sg64
+(dp124
+S'action'
+p125
+S'<function calendar>'
+p126
+sS'a'
+S'()'
+p127
+sS'b'
+g45
+ssg70
+I4241
+sg71
+(dp128
+I4236
+S'                    flag = condition'
+p129
+sI4237
+S'                if not flag:'
+p130
+sI4238
+S'                    current.session.flash = self.messages.access_denied'
+p131
+sI4239
+S'                    return call_or_redirect('
+p132
+sI4240
+S'                        self.settings.on_failed_authorization)'
+p133
+sI4241
+S'                return action(*a, **b)'
+p134
+sI4242
+S'            f.__doc__ = action.__doc__'
+p135
+sI4243
+S'            f.__name__ = action.__name__'
+p136
+sI4244
+S'            f.__dict__.update(action.__dict__)'
+p137
+sI4245
+S'            return f'
+p138
+ssg83
+S'(*a=(), **b={})'
+p139
+sg85
+S'f'
+sa(dp140
+g62
+S'C:\\web2py\\applications\\TurnoTaller\\controllers\\default.py'
+p141
+sg64
+(dp142
+S'registros'
+p143
+g107
+sS'builtindict'
+p144
+S"<type 'dict'>"
+p145
+ssg70
+I100
+sg71
+(dp146
+I96
+S'    #registros=db().select('
+p147
+sI97
+S'    #    db.paciente.ALL, db.task.ALL,'
+p148
+sI98
+S'    #    left = db.paciente.on(db.paciente.id==db.task.paciente)&(db.task.created_by==1))'
+p149
+sI99
+S'    registros= db((db.paciente.id==db.task.paciente)&'
+p150
+sI100
+S'        (db.task.created_by==auth.user.id) & db.task.start_time>d).select()'
+p151
+sI101
+S'    return dict(registros=registros)'
+p152
+sI102
+S'    #tasks=db(db.task.start_time>=request.now).select()'
+p153
+sI103
+S''
+sI104
+S'#agrego un nuevo paciente'
+p154
+sI95
+S'    #tasks=db(db.task).select()'
+p155
+ssg83
+S'()'
+p156
+sg85
+S'calendar'
+p157
+sasS'pyver'
+p158
+S'Python 2.7.9: C:\\web2py\\web2py.exe (prefix: )'
+p159
+sS'session'
+p160
+g57
+(S's\x12\n\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">auth</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">expiration</td><td style="vertical-align:top;">:</td><td><div>3600</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">hmac_key</td><td style="vertical-align:top;">:</td><td><div>3507cb59-9b8a-48df-ab3f-1718a36f6ee1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_visit</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2016, 9, 15, 17, 50, 19, 339000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remember_me</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">email</td><td style="vertical-align:top;">:</td><td><div>ascaf@cdsvsdv.sdfsd</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">first_name</td><td style="vertical-align:top;">:</td><td><div>facundo</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">id</td><td style="vertical-align:top;">:</td><td><div>2L</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_name</td><td style="vertical-align:top;">:</td><td><div>cscdv</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_id</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">reset_password_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">username</td><td style="vertical-align:top;">:</td><td><div>admin</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user_groups</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_orderby</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_query</td><td style="vertical-align:top;">:</td><td><div>db.auth_user.id&gt;0</div></td></tr></table></div>'
+tRp161
+sS'etype'
+p162
+S"<type 'exceptions.TypeError'>"
+p163
+sS'date'
+p164
+S'Thu Sep 15 17:50:21 2016'
+p165
+sS'response'
+p166
+g57
+(S's\x8c"\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">body</td><td style="vertical-align:top;">:</td><td><div>&lt;cStringIO.StringO object at 0x098311C0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_turnotaller</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div>/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">delimiters</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>{{</div></td></tr><tr><td><div>}}</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">files</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">form_label_separator</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">formstyle</td><td style="vertical-align:top;">:</td><td><div>bootstrap3_inline</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generic_patterns</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>*</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">google_analytics_id</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">headers</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">X-Powered-By</td><td style="vertical-align:top;">:</td><td><div>web2py</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">logo</td><td style="vertical-align:top;">:</td><td><div><a class="navbar-brand" href="#" id="web2py-logo"><b>Turno-Taller</b>&trade;&nbsp;</a></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">menu</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div><table><tr><td><div>Inicio</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/default/inicio</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Calendario</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/default/calendar</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Clientes</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/default/getAllPacientes</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Marca Vehiculo</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/marcaController/administrar_marca</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Modelo Vehiculo</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/modeloController/administrar_modelo</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Usuarios</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/userController/administrar_user</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Permisos Usuarios</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/TurnoTaller/userController/administrar_permisos</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">meta</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">author</td><td style="vertical-align:top;">:</td><td><div>Your Name &lt;you@example.com&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">description</td><td style="vertical-align:top;">:</td><td><div>a cool new app</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generator</td><td style="vertical-align:top;">:</td><td><div>Web2py Web Framework</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">keywords</td><td style="vertical-align:top;">:</td><td><div>web2py, python, framework</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">models_to_run</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>^\\w+\\.py$</div></td></tr><tr><td><div>^default/\\w+\\.py$</div></td></tr><tr><td><div>^default/calendar/\\w+\\.py$</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">postprocessing</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_compression_level</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_expires</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_data_name</td><td style="vertical-align:top;">:</td><td><div>session_data_turnotaller</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_file</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;C:\\\\web2py\\\\applications\\\\TurnoTaller\\\\sessions\\\\1d8\\\\0c2\\\\127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141&#x27;, mode &#x27;rb+&#x27; at 0x02CFCF40&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_filename</td><td style="vertical-align:top;">:</td><td><div>C:\\web2py\\applications\\TurnoTaller\\sessions\\127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_hash</td><td style="vertical-align:top;">:</td><td><div>3881899ff2f30ed87c2e30b3821ffeb5</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-ad50fba4-c61a-499d-ad91-428a26f3f141</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_name</td><td style="vertical-align:top;">:</td><td><div>session_id_turnotaller</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_locked</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_masterapp</td><td style="vertical-align:top;">:</td><td><div>TurnoTaller</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_new</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_storage_type</td><td style="vertical-align:top;">:</td><td><div>file</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">status</td><td style="vertical-align:top;">:</td><td><div>200</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">subtitle</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">title</td><td style="vertical-align:top;">:</td><td><div>Turnotaller</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">view</td><td style="vertical-align:top;">:</td><td><div>default/calendar.html</div></td></tr></table></div>'
+tRp167
+sS'locals'
+p168
+(dp169
+S'anio'
+p170
+S'2016'
+p171
+sS'd'
+S'datetime.datetime(2015, 12, 31, 0, 0)'
+p172
+sssS'traceback'
+p173
+S'Traceback (most recent call last):\n  File "C:\\web2py\\gluon\\restricted.py", line 227, in restricted\n    exec ccode in environment\n  File "C:\\web2py\\applications\\TurnoTaller\\controllers/default.py", line 316, in <module>\n  File "C:\\web2py\\gluon\\globals.py", line 417, in <lambda>\n    self._caller = lambda f: f()\n  File "C:\\web2py\\gluon\\tools.py", line 4241, in f\n    return action(*a, **b)\n  File "C:\\web2py\\applications\\TurnoTaller\\controllers/default.py", line 100, in calendar\n    (db.task.created_by==auth.user.id) & db.task.start_time>d).select()\nTypeError: can\'t compare datetime.datetime to Query\n'
+p174
+s.
